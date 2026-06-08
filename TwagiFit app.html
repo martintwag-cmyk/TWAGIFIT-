@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="TwagiFit"/>
+<meta name="theme-color" content="#080808"/>
+<title>TwagiFit</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:#080808;min-height:100%;font-family:'Helvetica Neue',Arial,sans-serif;color:#fff;overscroll-behavior:none}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0}
+#app{max-width:480px;margin:0 auto;padding:20px 16px;min-height:100vh}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+button{font-family:inherit;cursor:pointer}
+.screen{display:none}.screen.active{display:block}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px}
+.logo{font-size:34px;font-weight:900;letter-spacing:3px;text-transform:uppercase;line-height:1}
+.logo span{color:#E63946}
+.date-str{font-size:11px;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:3px}
+.hist-btn{background:none;border:1px solid #222;color:#555;border-radius:8px;padding:6px 12px;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+
+/* SECTION LABEL */
+.slabel{font-size:11px;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:14px}
+
+/* GROUPS GRID */
+.groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.group-card{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:14px;padding:16px 14px;text-align:left;position:relative;overflow:hidden;width:100%}
+.group-card.done{border-color:var(--c55)}
+.group-card-bar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--c);display:none}
+.group-card.done .group-card-bar{display:block}
+.group-name{font-size:19px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;color:#e0e0e0}
+.group-card.done .group-name{color:var(--c)}
+.group-count{font-size:11px;letter-spacing:1px;color:#333}
+.group-card.done .group-count{color:var(--c99)}
+
+/* BACK ROW */
+.back-row{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.back-btn{background:#0f0f0f;border:1px solid #1e1e1e;color:#555;border-radius:8px;width:34px;height:34px;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.screen-title{font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+
+/* EXERCISE LIST */
+.ex-list{display:flex;flex-direction:column;gap:10px}
+.ex-card{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:14px;padding:12px 14px;text-align:left;display:flex;align-items:center;gap:12px;width:100%}
+.ex-card.done{border-color:var(--c44)}
+.ex-icon-wrap{border-radius:10px;flex-shrink:0;border:1px solid #1e1e1e;display:flex;align-items:center;justify-content:center;width:70px;height:70px;overflow:hidden;background:#111}
+.ex-card.done .ex-icon-wrap{border-color:var(--c30);background:var(--c15)}
+.ex-icon-wrap svg{display:block}
+.ex-info{flex:1;min-width:0}
+.ex-sub{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#444;margin-bottom:2px}
+.ex-name{font-size:16px;font-weight:700;letter-spacing:.5px;color:#999;margin-bottom:4px}
+.ex-card.done .ex-name{color:#fff}
+.ex-sets-row{display:flex;gap:4px;flex-wrap:wrap}
+.ex-set-chip{border-radius:5px;padding:2px 7px;font-size:11px;letter-spacing:1px;background:var(--c20);color:var(--c)}
+.ex-last{font-size:11px;color:#333}
+.ex-arrow{color:#2a2a2a;font-size:20px}
+
+/* LOG SCREEN */
+.log-header{display:flex;align-items:center;gap:16px;margin-bottom:8px;background:#0f0f0f;border-radius:16px;padding:14px;border:1px solid var(--c30)}
+.log-icon-wrap{border-radius:12px;border:1px solid var(--c30);display:flex;align-items:center;justify-content:center;width:82px;height:82px;overflow:hidden;flex-shrink:0;background:var(--c15)}
+.log-ex-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#444;margin-bottom:4px}
+.log-ex-name{font-size:20px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;line-height:1.1}
+.ref-box{background:#0f0f0f;border-radius:10px;padding:10px 14px;margin-bottom:18px;border:1px solid #1a1a1a}
+.ref-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#333;margin-bottom:6px}
+.ref-chips{display:flex;gap:6px;flex-wrap:wrap}
+.ref-chip{background:#161616;color:#444;border-radius:6px;padding:3px 10px;font-size:13px;letter-spacing:1px}
+.sets-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.set-row{display:flex;align-items:center;gap:10px;background:#0f0f0f;border-radius:12px;padding:10px 14px;border:1px solid #1a1a1a}
+.set-row.filled{border-color:var(--c33)}
+.set-num{font-size:15px;font-weight:700;min-width:20px;color:var(--c)}
+.set-fields{flex:1;display:flex;gap:10px}
+.set-field{flex:1}
+.field-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#333;margin-bottom:3px}
+.field-input{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:7px 10px;color:#fff;font-size:20px;font-weight:700;outline:none}
+.field-input.filled{border-color:var(--c55)}
+.set-del{background:none;border:none;color:#333;font-size:20px;padding:0 4px}
+.add-set-btn{width:100%;background:none;border:1px dashed var(--c33);color:var(--c88);border-radius:12px;padding:12px;font-size:14px;letter-spacing:2px;text-transform:uppercase}
+
+/* HISTORY */
+.hist-day{margin-bottom:16px;background:#111;border-radius:12px;overflow:hidden;border:1px solid #1e1e1e}
+.hist-day-label{background:#161616;padding:8px 16px;font-size:12px;letter-spacing:2px;color:#555;text-transform:uppercase}
+.hist-ex-row{padding:10px 16px;border-bottom:1px solid #161616;display:flex;align-items:center;gap:10px}
+.hist-ex-name{font-size:13px;color:#bbb;flex:1}
+.hist-chips{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.hist-chip{background:#1e1e1e;border-radius:5px;padding:2px 8px;font-size:12px;color:#777;letter-spacing:1px}
+.empty-msg{color:#555;text-align:center;margin-top:60px;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- GROUPS -->
+  <div id="screen-groups" class="screen active">
+    <div class="header">
+      <div>
+        <div class="date-str" id="date-str"></div>
+        <div class="logo">Twagi<span>Fit</span></div>
+      </div>
+      <button class="hist-btn" onclick="showHistory()">Historique</button>
+    </div>
+    <div class="slabel">Groupe musculaire</div>
+    <div class="groups-grid" id="groups-grid"></div>
+  </div>
+
+  <!-- EXERCISES -->
+  <div id="screen-exercises" class="screen">
+    <div class="header" style="margin-bottom:0">
+      <div>
+        <div class="date-str" id="date-str2"></div>
+        <div class="logo">Twagi<span>Fit</span></div>
+      </div>
+      <button class="hist-btn" onclick="showHistory()">Historique</button>
+    </div>
+    <div class="back-row" style="margin-top:20px">
+      <button class="back-btn" onclick="showGroups()">←</button>
+      <span class="screen-title" id="ex-screen-title"></span>
+    </div>
+    <div class="ex-list" id="ex-list"></div>
+  </div>
+
+  <!-- LOG -->
+  <div id="screen-log" class="screen">
+    <div class="back-row">
+      <button class="back-btn" onclick="showExercises()">←</button>
+      <span style="font-size:13px;letter-spacing:2px;color:#444;text-transform:uppercase" id="log-group-label"></span>
+    </div>
+    <div class="log-header" id="log-header"></div>
+    <div id="ref-box-wrap"></div>
+    <div class="slabel" style="margin-top:4px">Séries</div>
+    <div class="sets-list" id="sets-list"></div>
+    <button class="add-set-btn" id="add-set-btn" onclick="addSet()">+ Ajouter une série</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="screen-history" class="screen">
+    <div class="back-row">
+      <button class="back-btn" onclick="showGroups()">←</button>
+      <span class="screen-title">Historique</span>
+    </div>
+    <div id="history-content"></div>
+  </div>
+
+</div>
+<script>
+// ── DATA ─────────────────────────────────────────────────────────
+var GROUPS = [
+  {id:'pectoraux', label:'Pectoraux',  color:'#457B9D'},
+  {id:'epaules',   label:'Épaules',    color:'#E9C46A'},
+  {id:'dos',       label:'Dos',        color:'#6A4C93'},
+  {id:'trapezes',  label:'Trapèzes',   color:'#2A9D8F'},
+  {id:'biceps',    label:'Biceps',     color:'#E63946'},
+  {id:'triceps',   label:'Triceps',    color:'#F4A261'},
+];
+
+var EXERCISES = {
+  pectoraux:[
+    {id:'dev_incline', name:'Développé Incliné Barre', sub:'Haut des pectoraux',    icon:'dev_incline'},
+    {id:'dev_couche',  name:'Développé Couché Barre',  sub:'Milieu des pectoraux',  icon:'dev_couche'},
+    {id:'dev_decline', name:'Développé Décliné',       sub:'Bas des pectoraux',     icon:'dev_decline'},
+  ],
+  epaules:[
+    {id:'elev_front',   name:'Élévations Frontales',  sub:'Faisceau antérieur',   icon:'elev_front'},
+    {id:'elev_lat',     name:'Élévations Latérales',  sub:'Faisceau latéral',     icon:'elev_lat'},
+    {id:'rev_pec_deck', name:'Reverse Pec Deck',      sub:'Faisceau postérieur',  icon:'rev_pec_deck'},
+  ],
+  dos:[
+    {id:'tractions',    name:'Tractions Pronation',      sub:'Largeur — dorsaux',   icon:'traction'},
+    {id:'tirage_vert',  name:'Tirage Vertical Large',    sub:'Largeur — dorsaux',   icon:'tirage_vert'},
+    {id:'tirage_horiz', name:'Tirage Horizontal Poulie', sub:'Épaisseur du dos',    icon:'tirage_horiz'},
+  ],
+  trapezes:[
+    {id:'shrug_halt',  name:'Shrugs Haltères', sub:'Trapèzes supérieurs', icon:'shrug_halt'},
+    {id:'shrug_barre', name:'Shrugs Barre',    sub:'Trapèzes supérieurs', icon:'shrug_barre'},
+  ],
+  biceps:[
+    {id:'curl_serre',   name:'Curl Barre Prise Serrée', sub:'Longue portion — pic',      icon:'curl_serre'},
+    {id:'curl_pupitre', name:'Curl Pupitre',             sub:'Courte portion — largeur',  icon:'curl_pupitre'},
+    {id:'curl_marteau', name:'Curl Marteau',             sub:'Brachial — épaisseur',      icon:'curl_marteau'},
+  ],
+  triceps:[
+    {id:'skull_crusher',  name:'Skull Crusher',           sub:'Longue portion',  icon:'skull_crusher'},
+    {id:'pushdown_droit', name:'Pushdown Barre Droite',   sub:'Vaste latéral',   icon:'pushdown_droit'},
+    {id:'pushdown_v',     name:'Pushdown Barre V',        sub:'Vaste latéral',   icon:'pushdown_v'},
+    {id:'pushdown_inv',   name:'Pushdown Prise Inversée', sub:'Vaste médial',    icon:'pushdown_inv'},
+  ],
+};
+
+// ── SVG ICONS ─────────────────────────────────────────────────────
+function icon(type, size, color) {
+  var s = size, c = color;
+  var map = {
+    dev_couche: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 96 60" fill="none"><rect x="8" y="38" width="80" height="8" rx="4" fill="'+c+'" opacity=".3"/><line x1="16" y1="46" x2="16" y2="56" stroke="'+c+'" stroke-width="3" opacity=".3"/><line x1="80" y1="46" x2="80" y2="56" stroke="'+c+'" stroke-width="3" opacity=".3"/><circle cx="82" cy="31" r="6" fill="'+c+'"/><line x1="76" y1="34" x2="16" y2="38" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="64" y1="35" x2="58" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="40" y1="37" x2="34" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="28" y1="16" x2="64" y2="16" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="20" y="11" width="10" height="9" rx="2.5" fill="'+c+'"/><rect x="62" y="11" width="10" height="9" rx="2.5" fill="'+c+'"/><line x1="16" y1="38" x2="10" y2="52" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="38" x2="22" y2="52" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    dev_incline: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 96 64" fill="none"><path d="M10 60 L82 36" stroke="'+c+'" stroke-width="7" stroke-linecap="round" opacity=".3"/><circle cx="80" cy="26" r="6" fill="'+c+'"/><line x1="75" y1="30" x2="18" y2="48" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="62" y1="31" x2="54" y2="14" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="38" x2="34" y2="20" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="28" y1="18" x2="58" y2="12" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="22" y="8" width="9" height="8" rx="2" fill="'+c+'"/><rect x="56" y="6" width="9" height="8" rx="2" fill="'+c+'"/><line x1="18" y1="48" x2="12" y2="60" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="48" x2="24" y2="60" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    dev_decline: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 96 64" fill="none"><path d="M10 36 L82 56" stroke="'+c+'" stroke-width="7" stroke-linecap="round" opacity=".3"/><circle cx="14" cy="26" r="6" fill="'+c+'"/><line x1="19" y1="30" x2="76" y2="48" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="31" x2="36" y2="14" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="52" y1="38" x2="58" y2="20" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="12" x2="62" y2="18" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="26" y="8" width="9" height="8" rx="2" fill="'+c+'"/><rect x="60" y="14" width="9" height="8" rx="2" fill="'+c+'"/><line x1="76" y1="48" x2="80" y2="60" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="76" y1="48" x2="70" y2="60" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    elev_front: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><circle cx="30" cy="8" r="6" fill="'+c+'"/><line x1="30" y1="14" x2="30" y2="46" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="22" x2="46" y2="24" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="24" x2="50" y2="12" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="8" x2="56" y2="8" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="44" y="5" width="5" height="6" rx="1.5" fill="'+c+'"/><rect x="53" y="5" width="5" height="6" rx="1.5" fill="'+c+'"/><line x1="30" y1="22" x2="16" y2="28" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="28" x2="14" y2="42" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="46" x2="22" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="46" x2="38" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="66" x2="20" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="66" x2="40" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    elev_lat: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 84 80" fill="none"><circle cx="42" cy="8" r="6" fill="'+c+'"/><line x1="42" y1="14" x2="42" y2="46" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="22" x2="8" y2="26" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="22" x2="76" y2="26" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="2" y1="24" x2="12" y2="24" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="0" y="21" width="5" height="6" rx="1.5" fill="'+c+'"/><rect x="9" y="21" width="5" height="6" rx="1.5" fill="'+c+'"/><line x1="72" y1="24" x2="82" y2="24" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="70" y="21" width="5" height="6" rx="1.5" fill="'+c+'"/><rect x="79" y="21" width="5" height="6" rx="1.5" fill="'+c+'"/><line x1="42" y1="46" x2="34" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="46" x2="50" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="34" y1="66" x2="32" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="66" x2="52" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    rev_pec_deck: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 88 64" fill="none"><circle cx="72" cy="12" r="6" fill="'+c+'"/><line x1="68" y1="17" x2="26" y2="32" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="22" x2="64" y2="8" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="50" y1="22" x2="36" y2="8" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="60" y1="4" x2="70" y2="4" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="57" y="1" width="6" height="6" rx="1.5" fill="'+c+'"/><rect x="67" y="1" width="6" height="6" rx="1.5" fill="'+c+'"/><line x1="28" y1="4" x2="38" y2="4" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="25" y="1" width="6" height="6" rx="1.5" fill="'+c+'"/><rect x="35" y="1" width="6" height="6" rx="1.5" fill="'+c+'"/><line x1="26" y1="32" x2="18" y2="52" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="26" y1="32" x2="32" y2="52" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="52" x2="16" y2="60" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="52" x2="34" y2="60" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    traction: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><rect x="4" y="4" width="52" height="6" rx="3" fill="'+c+'" opacity=".7"/><circle cx="30" cy="20" r="6" fill="'+c+'"/><line x1="30" y1="14" x2="16" y2="8" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="14" x2="44" y2="8" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="26" x2="30" y2="52" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="52" x2="22" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="66" x2="24" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="52" x2="38" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="38" y1="66" x2="36" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    tirage_vert: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 84 80" fill="none"><rect x="28" y="2" width="28" height="10" rx="4" fill="'+c+'" opacity=".35"/><circle cx="42" cy="14" r="3.5" fill="'+c+'" opacity=".55"/><line x1="42" y1="17" x2="42" y2="30" stroke="'+c+'" stroke-width="2" stroke-dasharray="3 2"/><circle cx="42" cy="22" r="6" fill="'+c+'"/><line x1="42" y1="28" x2="42" y2="54" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="34" x2="16" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="30" x2="18" y2="42" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="34" x2="68" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="68" y1="30" x2="66" y2="42" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="42" x2="66" y2="42" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="10" y="36" width="10" height="10" rx="2.5" fill="'+c+'"/><rect x="64" y="36" width="10" height="10" rx="2.5" fill="'+c+'"/><line x1="36" y1="54" x2="28" y2="70" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="48" y1="54" x2="56" y2="70" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="28" y1="70" x2="26" y2="78" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="56" y1="70" x2="58" y2="78" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    tirage_horiz: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 84 64" fill="none"><rect x="2" y="4" width="12" height="56" rx="4" fill="'+c+'" opacity=".25"/><circle cx="8" cy="32" r="4" fill="'+c+'" opacity=".55"/><path d="M12 32 Q28 30 38 34" stroke="'+c+'" stroke-width="2" stroke-dasharray="3 2" fill="none"/><circle cx="60" cy="18" r="6" fill="'+c+'"/><line x1="56" y1="22" x2="46" y2="44" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="56" y1="28" x2="40" y2="32" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="52" y1="30" x2="38" y2="34" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="44" x2="30" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="50" x2="14" y2="52" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="44" x2="38" y2="56" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="38" y1="56" x2="14" y2="58" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    shrug_halt: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><circle cx="30" cy="7" r="6" fill="'+c+'"/><line x1="30" y1="13" x2="30" y2="44" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="16" x2="12" y2="18" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="16" x2="48" y2="18" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="12" y1="18" x2="10" y2="44" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="48" y1="18" x2="50" y2="44" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="4" y1="42" x2="16" y2="42" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="1" y="38" width="6" height="7" rx="1.5" fill="'+c+'"/><rect x="11" y="38" width="6" height="7" rx="1.5" fill="'+c+'"/><line x1="44" y1="42" x2="56" y2="42" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="42" y="38" width="6" height="7" rx="1.5" fill="'+c+'"/><rect x="52" y="38" width="6" height="7" rx="1.5" fill="'+c+'"/><line x1="30" y1="44" x2="22" y2="62" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="44" x2="38" y2="62" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="62" x2="20" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="62" x2="40" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    shrug_barre: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><circle cx="30" cy="7" r="6" fill="'+c+'"/><line x1="30" y1="13" x2="30" y2="44" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="16" x2="12" y2="18" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="16" x2="48" y2="18" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="12" y1="18" x2="10" y2="44" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="48" y1="18" x2="50" y2="44" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="4" y1="42" x2="56" y2="42" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="0" y="36" width="10" height="10" rx="3" fill="'+c+'"/><rect x="50" y="36" width="10" height="10" rx="3" fill="'+c+'"/><line x1="30" y1="44" x2="22" y2="62" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="44" x2="38" y2="62" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="62" x2="20" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="62" x2="40" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    curl_serre: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><circle cx="30" cy="8" r="6" fill="'+c+'"/><line x1="30" y1="14" x2="30" y2="44" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="20" x2="14" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="14" y1="30" x2="20" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="20" x2="46" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="30" x2="40" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="17" x2="44" y2="17" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><rect x="10" y="13" width="7" height="7" rx="2" fill="'+c+'"/><rect x="43" y="13" width="7" height="7" rx="2" fill="'+c+'"/><line x1="30" y1="44" x2="22" y2="64" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="44" x2="38" y2="64" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="64" x2="20" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="64" x2="40" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    curl_pupitre: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 72 72" fill="none"><path d="M8 60 L54 28" stroke="'+c+'" stroke-width="5" stroke-linecap="round" opacity=".3"/><line x1="8" y1="60" x2="8" y2="70" stroke="'+c+'" stroke-width="3.5" opacity=".3"/><circle cx="58" cy="18" r="6" fill="'+c+'"/><line x1="55" y1="23" x2="46" y2="50" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="52" y1="28" x2="36" y2="38" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="36" y1="38" x2="38" y2="24" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="32" y1="22" x2="44" y2="22" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="29" y="18" width="6" height="7" rx="1.5" fill="'+c+'"/><rect x="41" y="18" width="6" height="7" rx="1.5" fill="'+c+'"/><line x1="46" y1="50" x2="38" y2="66" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="50" x2="54" y2="64" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="38" y1="66" x2="36" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="54" y1="64" x2="56" y2="72" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    curl_marteau: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><circle cx="30" cy="8" r="6" fill="'+c+'"/><line x1="30" y1="14" x2="30" y2="44" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="20" x2="14" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="14" y1="30" x2="18" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="12" x2="18" y2="22" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="14" y="9" width="8" height="5" rx="1.5" fill="'+c+'"/><rect x="14" y="22" width="8" height="5" rx="1.5" fill="'+c+'"/><line x1="30" y1="20" x2="46" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="30" x2="42" y2="18" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="12" x2="42" y2="22" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><rect x="38" y="9" width="8" height="5" rx="1.5" fill="'+c+'"/><rect x="38" y="22" width="8" height="5" rx="1.5" fill="'+c+'"/><line x1="30" y1="44" x2="22" y2="64" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="44" x2="38" y2="64" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="64" x2="20" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="64" x2="40" y2="74" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    skull_crusher: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 88 60" fill="none"><rect x="8" y="40" width="72" height="8" rx="4" fill="'+c+'" opacity=".3"/><line x1="14" y1="48" x2="14" y2="58" stroke="'+c+'" stroke-width="3" opacity=".3"/><line x1="74" y1="48" x2="74" y2="58" stroke="'+c+'" stroke-width="3" opacity=".3"/><circle cx="74" cy="33" r="6" fill="'+c+'"/><line x1="68" y1="36" x2="16" y2="40" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="58" y1="37" x2="54" y2="24" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="38" y1="38" x2="34" y2="24" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="22" x2="58" y2="22" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><rect x="24" y="17" width="8" height="9" rx="2" fill="'+c+'"/><rect x="56" y="17" width="8" height="9" rx="2" fill="'+c+'"/><line x1="16" y1="40" x2="10" y2="56" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="40" x2="22" y2="56" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    pushdown_droit: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><rect x="24" y="2" width="12" height="10" rx="3" fill="'+c+'" opacity=".35"/><circle cx="30" cy="14" r="3" fill="'+c+'" opacity=".55"/><line x1="30" y1="17" x2="30" y2="26" stroke="'+c+'" stroke-width="2" stroke-dasharray="3 2"/><circle cx="30" cy="20" r="6" fill="'+c+'"/><line x1="30" y1="26" x2="30" y2="52" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="32" x2="18" y2="34" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="34" x2="18" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="32" x2="42" y2="34" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="34" x2="42" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="50" x2="44" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="52" x2="22" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="52" x2="38" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="68" x2="20" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="68" x2="40" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    pushdown_v: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><rect x="24" y="2" width="12" height="10" rx="3" fill="'+c+'" opacity=".35"/><circle cx="30" cy="14" r="3" fill="'+c+'" opacity=".55"/><line x1="30" y1="17" x2="30" y2="26" stroke="'+c+'" stroke-width="2" stroke-dasharray="3 2"/><circle cx="30" cy="20" r="6" fill="'+c+'"/><line x1="30" y1="26" x2="30" y2="52" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="32" x2="18" y2="34" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="18" y1="34" x2="18" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="32" x2="42" y2="34" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="42" y1="34" x2="42" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="48" x2="20" y2="56" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="48" x2="40" y2="56" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="52" x2="22" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="52" x2="38" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="68" x2="20" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="68" x2="40" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+    pushdown_inv: '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 80" fill="none"><rect x="24" y="2" width="12" height="10" rx="3" fill="'+c+'" opacity=".35"/><circle cx="30" cy="14" r="3" fill="'+c+'" opacity=".55"/><line x1="30" y1="17" x2="30" y2="26" stroke="'+c+'" stroke-width="2" stroke-dasharray="3 2"/><circle cx="30" cy="20" r="6" fill="'+c+'"/><line x1="30" y1="26" x2="30" y2="52" stroke="'+c+'" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="32" x2="16" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="30" x2="18" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="32" x2="44" y2="30" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="44" y1="30" x2="42" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="16" y1="50" x2="44" y2="50" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="20" y1="50" x2="20" y2="56" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="50" x2="40" y2="56" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"/><line x1="30" y1="52" x2="22" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="30" y1="52" x2="38" y2="68" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/><line x1="22" y1="68" x2="20" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="68" x2="40" y2="76" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/></svg>',
+  };
+  return map[type] || '<svg width="'+s+'" height="'+s+'" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="20" stroke="'+c+'" stroke-width="2" opacity=".4"/></svg>';
+}
+
+// ── STATE ──────────────────────────────────────────────────────────
+var state = {
+  activeGroup: null,
+  activeEx: null,
+  logs: {},
+};
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function loadLogs() {
+  try { var r = localStorage.getItem('twagi_logs'); if(r) state.logs = JSON.parse(r); } catch(e){}
+}
+
+function saveLogs() {
+  try { localStorage.setItem('twagi_logs', JSON.stringify(state.logs)); } catch(e){}
+}
+
+function getSets() {
+  var t = today(), id = state.activeEx.id;
+  if (!state.logs[t]) state.logs[t] = {};
+  if (!state.logs[t][id]) state.logs[t][id] = [{reps:'',weight:''}];
+  return state.logs[t][id];
+}
+
+function hexToCSS(hex, alpha) {
+  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+
+// ── SCREENS ────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showGroups() {
+  renderGroups();
+  showScreen('screen-groups');
+}
+
+function showExercises() {
+  renderExercises();
+  showScreen('screen-exercises');
+}
+
+function showLog(ex) {
+  state.activeEx = ex;
+  renderLog();
+  showScreen('screen-log');
+}
+
+function showHistory() {
+  renderHistory();
+  showScreen('screen-history');
+}
+
+// ── RENDER GROUPS ──────────────────────────────────────────────────
+function renderGroups() {
+  var d = new Date();
+  var ds = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'}).toUpperCase();
+  document.getElementById('date-str').textContent = ds;
+  var t = today();
+  var grid = document.getElementById('groups-grid');
+  grid.innerHTML = '';
+  GROUPS.forEach(function(g) {
+    var exList = EXERCISES[g.id] || [];
+    var done = Object.keys(state.logs[t]||{}).filter(function(id){ return exList.find(function(e){return e.id===id;}); }).length;
+    var card = document.createElement('button');
+    card.className = 'group-card' + (done ? ' done' : '');
+    card.style.setProperty('--c', g.color);
+    card.style.setProperty('--c55', hexToCSS(g.color, 0.33));
+    card.style.setProperty('--c99', hexToCSS(g.color, 0.6));
+    card.innerHTML = '<div class="group-card-bar"></div>'
+      + '<div class="group-name">'+g.label+'</div>'
+      + '<div class="group-count">'+(done ? done+'/'+exList.length+' exercices' : exList.length+' exercices')+'</div>';
+    card.onclick = function(){ state.activeGroup = g.id; showExercises(); };
+    grid.appendChild(card);
+  });
+}
+
+// ── RENDER EXERCISES ───────────────────────────────────────────────
+function renderExercises() {
+  var g = GROUPS.find(function(x){return x.id===state.activeGroup;});
+  var t = today();
+  document.getElementById('date-str2').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'}).toUpperCase();
+  var title = document.getElementById('ex-screen-title');
+  title.textContent = g.label;
+  title.style.color = g.color;
+  var list = document.getElementById('ex-list');
+  list.innerHTML = '';
+  (EXERCISES[state.activeGroup]||[]).forEach(function(ex) {
+    var todaySets = ((state.logs[t]||{})[ex.id]||[]).filter(function(s){return s.reps||s.weight;});
+    var lastDate = Object.keys(state.logs).filter(function(d){return d!==t && state.logs[d][ex.id];}).sort().reverse()[0];
+    var lastSets = lastDate ? state.logs[lastDate][ex.id].filter(function(s){return s.reps||s.weight;}) : null;
+    var card = document.createElement('button');
+    card.className = 'ex-card' + (todaySets.length ? ' done' : '');
+    card.style.setProperty('--c', g.color);
+    card.style.setProperty('--c44', hexToCSS(g.color,0.27));
+    card.style.setProperty('--c30', hexToCSS(g.color,0.19));
+    card.style.setProperty('--c15', hexToCSS(g.color,0.08));
+    card.style.setProperty('--c20', hexToCSS(g.color,0.12));
+    var iconColor = todaySets.length ? g.color : '#3a3a3a';
+    var setsHTML = '';
+    if (todaySets.length) {
+      setsHTML = '<div class="ex-sets-row">'+todaySets.map(function(s){
+        return '<span class="ex-set-chip">'+(s.reps?s.reps+'×':'')+(s.weight?s.weight+'kg':'')+'</span>';
+      }).join('')+'</div>';
+    } else if (lastSets && lastSets.length) {
+      setsHTML = '<div class="ex-last">Dernière: '+lastSets.map(function(s){return (s.reps||'?')+'×'+(s.weight||'?')+'kg';}).join(' · ')+'</div>';
+    } else {
+      setsHTML = '<div class="ex-last" style="color:#2a2a2a">Pas encore effectué</div>';
+    }
+    card.innerHTML = '<div class="ex-icon-wrap">'+icon(ex.icon,58,iconColor)+'</div>'
+      +'<div class="ex-info"><div class="ex-sub">'+ex.sub+'</div><div class="ex-name">'+ex.name+'</div>'+setsHTML+'</div>'
+      +'<div class="ex-arrow">›</div>';
+    card.onclick = function(){ showLog(ex); };
+    list.appendChild(card);
+  });
+}
+
+// ── RENDER LOG ─────────────────────────────────────────────────────
+function renderLog() {
+  var g = GROUPS.find(function(x){return x.id===state.activeGroup;});
+  var ex = state.activeEx;
+  document.getElementById('log-group-label').textContent = g.label;
+  // header
+  document.getElementById('log-header').style.borderColor = hexToCSS(g.color,0.19);
+  document.getElementById('log-header').innerHTML =
+    '<div class="log-icon-wrap" style="background:'+hexToCSS(g.color,0.08)+';border-color:'+hexToCSS(g.color,0.19)+'">'+icon(ex.icon,68,g.color)+'</div>'
+    +'<div><div class="log-ex-sub">'+ex.sub+'</div><div class="log-ex-name">'+ex.name+'</div></div>';
+  // reference
+  var t = today();
+  var lastDate = Object.keys(state.logs).filter(function(d){return d!==t && state.logs[d][ex.id];}).sort().reverse()[0];
+  var refWrap = document.getElementById('ref-box-wrap');
+  if (lastDate) {
+    var lastSets = state.logs[lastDate][ex.id].filter(function(s){return s.reps||s.weight;});
+    var ld = new Date(lastDate+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    refWrap.innerHTML = '<div class="ref-box"><div class="ref-label">Référence · '+ld+'</div>'
+      +'<div class="ref-chips">'+lastSets.map(function(s,i){
+        return '<span class="ref-chip">S'+(i+1)+' · '+s.reps+'× · '+s.weight+'kg</span>';
+      }).join('')+'</div></div>';
+  } else { refWrap.innerHTML=''; }
+  // add-set color
+  var btn = document.getElementById('add-set-btn');
+  btn.style.borderColor = hexToCSS(g.color,0.2);
+  btn.style.color = hexToCSS(g.color,0.53);
+  renderSets();
+}
+
+function renderSets() {
+  var g = GROUPS.find(function(x){return x.id===state.activeGroup;});
+  var sets = getSets();
+  var list = document.getElementById('sets-list');
+  list.innerHTML = '';
+  sets.forEach(function(s, i) {
+    var row = document.createElement('div');
+    var filled = s.reps||s.weight;
+    row.className = 'set-row' + (filled?' filled':'');
+    row.style.setProperty('--c', g.color);
+    row.style.setProperty('--c33', hexToCSS(g.color,0.2));
+    row.style.setProperty('--c55', hexToCSS(g.color,0.33));
+    var delBtn = sets.length > 1 ? '<button class="set-del" onclick="delSet('+i+')">×</button>' : '';
+    row.innerHTML = '<span class="set-num">'+(i+1)+'</span>'
+      +'<div class="set-fields">'
+      +'<div class="set-field"><div class="field-label">Reps</div>'
+      +'<input class="field-input'+(s.reps?' filled':'')+'" type="number" inputmode="numeric" value="'+s.reps+'" placeholder="—" oninput="updateSet('+i+',\'reps\',this.value)"/></div>'
+      +'<div class="set-field"><div class="field-label">Poids kg</div>'
+      +'<input class="field-input'+(s.weight?' filled':'')+'" type="number" inputmode="decimal" value="'+s.weight+'" placeholder="—" oninput="updateSet('+i+',\'weight\',this.value)"/></div>'
+      +'</div>'+delBtn;
+    list.appendChild(row);
+  });
+}
+
+function updateSet(i, field, val) {
+  var sets = getSets();
+  sets[i][field] = val;
+  saveLogs();
+  // just update border color without full re-render
+  var rows = document.querySelectorAll('.set-row');
+  if(rows[i]) {
+    var inp = rows[i].querySelectorAll('.field-input');
+    inp.forEach(function(el){ el.classList.toggle('filled', !!el.value); });
+    rows[i].classList.toggle('filled', !!(sets[i].reps||sets[i].weight));
+  }
+}
+
+function addSet() {
+  var sets = getSets();
+  sets.push({reps:'',weight:''});
+  saveLogs();
+  renderSets();
+}
+
+function delSet(i) {
+  var sets = getSets();
+  sets.splice(i,1);
+  if(!sets.length) sets.push({reps:'',weight:''});
+  saveLogs();
+  renderSets();
+}
+
+// ── RENDER HISTORY ─────────────────────────────────────────────────
+function renderHistory() {
+  var dates = Object.keys(state.logs).sort().reverse().slice(0,14);
+  var wrap = document.getElementById('history-content');
+  if (!dates.length) { wrap.innerHTML='<div class="empty-msg">Aucune séance enregistrée</div>'; return; }
+  wrap.innerHTML = dates.map(function(date) {
+    var dayLogs = state.logs[date];
+    var label = new Date(date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    var rows = Object.keys(dayLogs).map(function(exId) {
+      var sets = dayLogs[exId].filter(function(s){return s.reps||s.weight;});
+      if (!sets.length) return '';
+      var exName = [].concat.apply([],Object.values(EXERCISES)).find(function(e){return e.id===exId;});
+      return '<div class="hist-ex-row"><span class="hist-ex-name">'+(exName?exName.name:exId)+'</span>'
+        +'<div class="hist-chips">'+sets.map(function(s){
+          return '<span class="hist-chip">'+(s.reps?s.reps+'×':'')+(s.weight?s.weight+'kg':'')+'</span>';
+        }).join('')+'</div></div>';
+    }).join('');
+    if (!rows) return '';
+    return '<div class="hist-day"><div class="hist-day-label">'+label+'</div>'+rows+'</div>';
+  }).join('');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+loadLogs();
+showGroups();
+</script>
+</body>
+</html>
